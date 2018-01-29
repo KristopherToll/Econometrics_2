@@ -124,5 +124,9 @@ print(e)
   (d) Create another vector $(y_2-x_1, y_3-x_2, ... y_n-x_{n-1})$
 
 ```{r}
-function(
+n=2:length(y)
+d <- (y[n]-x[n-1]) # It worked!
+print(d)
 ```
+
+9. In this exercise, we will consider a quadratic equations of the form $y= \beta_0 + \
