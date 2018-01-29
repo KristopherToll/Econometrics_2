@@ -83,7 +83,7 @@ print(x.1)
 #print(x.2)
 ```
 
-7. Calculate $$\sum_{i = 10}^{100} (i^3 + 4*i^2) $$
+7. Calculate $\sum_{i = 10}^{100} (i^3 + 4*i^2) $
 
 ```{r}
 s = seq(10, 100, by = 1) # Creating the sequence
@@ -102,6 +102,27 @@ y <- sample(0:999, size = 250, replace = TRUE)
   (a) Pick out the values in Y which are > 600
   
 ```{r}
-y.1 <- as.numeric(y>600)
-print(y>600)
+y.1 <- subset(y, y>600) # use the subset comand to pull out elements of a vector
+print(y.1)
+```
+
+  (b) How many values in y are within 200 of the maximum value of the terms in y?
+  
+```{r}
+y.2 <- subset(y, y >= max(y)-200)
+print(length(y.2))
+```
+
+
+  (c) Create the vector e
+  
+```{r}
+e <- abs(x-mean(x))^(1/2)
+print(e)
+```
+
+  (d) Create another vector $(y_2-x_1, y_3-x_2, ... y_n-x_{n-1})$
+
+```{r}
+function(
 ```
