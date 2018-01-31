@@ -3,6 +3,7 @@ title: "Problem_Set_1"
 author: "Kristopher C. Toll"
 date: "January 26, 2018"
 output:
+  word_document: default
   pdf_document: default
   html_document: default
 ---
@@ -11,23 +12,23 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Programing exercises
+# R Programing exercises
 
-1. Calculate the square root of 729
+###1. Calculate the square root of 729
 
 ```{r}
 b = sqrt(729)
 print(b)
 ```
 
-2. Create a new variable a with value 1947.0
+###2. Create a new variable a with value 1947.0
 
 ```{r}
-a = 1947.0
+a = as.integer(1947.0)
 print(a)
 ```
 
-3. Create a vector b containg number form 1 to 6 and find out it's class.
+###3. Create a vector b contaning number form 1 to 6 and find out it's class.
 
 b is a numeric variable.
 
@@ -37,7 +38,7 @@ b.1 <- class(b)
 print(c(b, b.1))
 ```
 
-4. Create a vector c containg following mixed elements
+###4. Create a vector c containg following mixed elements
 
 ```{r}
 c = c(1, "a", 2, "b")
@@ -45,7 +46,7 @@ print(c)
 
 ```
 
-  (a) Find out its class
+  (a) Find out its class.
   It is a character variable
 
 ```{r}
@@ -66,8 +67,8 @@ print(c[2]) # Printing the 2nd element
 print(c[3]) # Printing the 3rd element
 ```
 
-5. Create a vector d containing following elements c(1, 2, NA, 4, 5, 6, NA, NA, NA, 10)
-Remove missing valuse from d
+###5. Create a vector d containing following elements c(1, 2, NA, 4, 5, 6, NA, NA, NA, 10)
+Remove missing values from d
 
 ```{r}
 d = c(1, 2, NA, 4, 5, 6, NA, NA, NA, 10)
@@ -75,17 +76,17 @@ d = as.numeric(na.omit(d)) # Removing NA valuse and converting the vector to a n
 print(d)
 ```
 
-6. Create a vector of values of e^x cos 3 at x = 3, 3.1, 3.2, ... 6
+###6. Create a vector of values of $e^x$ cos 3 at x = 3, 3.1, 3.2, ... 6
 
 ```{r}
 x = seq(3, 6, by = 0.1)
-x.1 = exp(x) * cos(x) # cosine is reading in x as a radian
+x.1 = exp(x) * cos(x) # cosine is reading in x as a radian unit
 print(x.1)
 #x.2 = exp(x) * cos(x/180) # this funtions will read it in as degrees
 #print(x.2)
 ```
 
-7. Calculate $\sum_{i = 10}^{100} (i^3 + 4*i^2) $
+###7. Calculate $\sum_{i = 10}^{100} (i^3 + 4*i^2)$
 
 ```{r}
 s = seq(10, 100, by = 1) # Creating the sequence
@@ -94,7 +95,7 @@ s.2 = sum(s.1) # Calculating the sum of the transformed sequence
 print(s.2)
 ```
 
-8. Execute the folling line wich create two vectors of random integers that are chosen with replacement from the integers 0, 1, ...999. Both vectors have length 250.
+###8. Execute the following line which create two vectors of random integers that are chosen with replacement from the integers 0, 1, ...999. Both vectors have length 250.
 
 ```{r}
 x <- sample(0:999, size = 250, replace = TRUE)
@@ -123,7 +124,7 @@ e <- abs(x-mean(x))^(1/2)
 print(e)
 ```
 
-  (d) Create another vector $(y_2-x_1, y_3-x_2, ... y_n-x_{n-1})$
+  (d) Create another vector $(y_2-x_1, y_3-x_2, ... y_n - x_{n-1})$
 
 ```{r}
 n=2:length(y)
@@ -131,7 +132,7 @@ d <- (y[n]-x[n-1]) # It worked!
 print(d)
 ```
 
-9. In this exercise, we will consider a quadratic equations of the form $(y = \beta_0 + \beta_1 x + \beta_2 x^2)$. Create a vector of coefficients for a quadratci equations.
+###9. In this exercise, we will consider a quadratic equations of the form $(y = \beta_0 + \beta_1 x + \beta_2 x^2)$. Create a vector of coefficients for a quadratic equations.
 
 ```{r}
 coeffs <- sample(-20:20, size = 3, replace = TRUE)
@@ -143,7 +144,7 @@ coeffs <- sample(-20:20, size = 3, replace = TRUE)
 print(length(coeffs))
 ```
 
-(b) Create 200 values of x from a regulary space vector between -3 and 3
+(b) Create 200 values of x from a regularly spaced vector between -3 and 3
 
 ```{r}
 x <- seq(from = -3, to = 3, length.out = 200)
@@ -161,14 +162,111 @@ y = coeffs[1] + coeffs[2] * x + coeffs[3] * x^2
 plot(y, main = "Quadratic form of y")
 ```
 
-10. Without using R, determine the result of the following computation
+###10. Without using R, determine the result of the following computation
 
 $$ x <- c(1,2,3) $$
 
 $$ x[1]/x[2]^3-1+2*x[3]-x[2-1] = 1/2^3-1*3-1 = 4.125 $$
 
-11. Create the following matrix with 15 rows
+###11. Create the following matrix with 15 rows
 
 ```{r}
+A = matrix(c(rep(c(10, -5, 10), times = 15)), nrow = 15, byrow = TRUE)
+print(A)
 
+A.1 = A # Copy the matrix
+A.1[,3] = A.1[,1] + A.1[,2] # rewrite the 3 column as a sum of the first two
+print(A.1)
 ```
+
+###12. Create a function that given two number will return he sum of those two number
+
+```{r}
+add <- function(a,b){
+  c = a + b
+  return(c)
+}
+
+add(5,10)
+```
+
+###13. Create a function that given a vector and an integer will return how many times the integer appears inside the vector
+
+```{r}
+count <- function(x, int){
+  y <- vector()
+  for(i in 1:length(x)){
+    ifelse(x[i] == int, y[i] <- 1, y[i] <- 0)
+  }
+  z = sum(y)
+  return(z)
+}
+
+# testing the function
+
+x <- c(4,5, 6, 6, 7, 8) 
+count(x = x, int = 6) # The argument should return a 2 given vector x
+```
+
+###14. Create a function that given an integer vector $(z_1, z_2, ... , z_n)$ will return $(z_1, z_1^2, ..., z_n^n)$
+
+```{r}
+zsquared <- function(x){
+  z <- numeric(length(x))
+  for(i in 1:length(x)){
+    z[i] <- x[i]^2
+  }
+  return(z)
+}
+
+# Testing the function
+
+x <- c(2, 2)
+zsquared(x) # should return two 4s given vector x
+```
+
+###15. Create a piecewise function
+
+```{r}
+piecewise <- function(x){
+  y <- numeric(length(x))
+  for(i in 1:length(x)){
+    if(x[i] < 0 ){
+      y[i] = (x[i]^2 + 2 * x[i] + 3)
+    }
+    else if(x[i] >= 0 & x[i] < 2 ){
+      y[i] = (x[i] + 3)
+    }
+    else if( 2 <= x[i]){
+      y[i] = (x[i]^2 + 4 * x[i] - 7)
+    }
+  }
+  return(y)
+}
+
+# Testing the piecewise function
+
+x <-seq(-3, 3, length = 100)
+y <- piecewise(x)
+
+plot(x, y, main = "Piecewise function for #15", pch = "*", col = 617, bg = 456)
+```
+
+# Theory
+
+### Problem 1: 
+Show that for $Y_t$, $E(Y_t^2) = \sigma^2$ with $E(Y_t) = \mu_t = 0$ and $Var(Y_t) = \gamma_Y (0) = \sigma^2$
+
+
+
+$$Var(Y_t) = \sigma^2 = E[(Y_t - \mu_t)^2] = E[Y_t^2 - 2 Y_t \mu + \mu_t^2]$$
+$$\sigma^2 = E[Y_t^2] - 2 \mu_t E[Y_t] + E[\mu_t^2] = E[Y_t^2] - 2 \mu_t * 0 + 0 $$
+$$\sigma^2 = E[Y_t^2] $$
+
+### Problem 2:
+Show that the autocovariance function can be written as $\gamma_y (s,t) = E(Y_s = \mu_s)(Y_t - \mu_t) = E(Y_s Y_t) - \mu_s \mu_t$ where $E(Y_t) = \mu_t$ and $E(Y_s) = \mu_s$
+
+$$\gamma_y (s,t) = E(Y_s - \mu_s)(Y_t - \mu_t) = E(Y_s Y_t - Y_s \mu_t - Y_t \mu_s + \mu_t \mu_s)$$
+$$\gamma_y (s,t) = E(Y_s Y_t) - E(Y_s \mu_t) - E(Y_t \mu_s) + E(\mu_t \mu_s) = E(Y_s Y_t) - \mu_t E(Y_s) - \mu_s E(Y_t) + \mu_t \mu_s $$
+$$\gamma_y (s,t) =E(Y_s Y_t) - \mu_t \mu_s - \mu_s \mu_t + \mu_t \mu_s = E(Y_s Y_t) - 2\mu_t \mu_s + \mu_t \mu_s = E(Y_s Y_t) - \mu_t \mu_s$$
+$$\gamma_y (s,t) = E(Y_s Y_t) - \mu_t \mu_s$$
