@@ -166,7 +166,7 @@ plot(y, main = "Quadratic form of y")
 
 $$ x <- c(1,2,3) $$
 
-$$ x[1]/x[2]^3-1+2*x[3]-x[2-1] = 1/2^3-1*3-1 = 4.125 $$
+$$ x[1]/x[2]^3-1+2*x[3]-x[2-1] = 1/2^3-1+2*3-1 = 4.125 $$
 
 ###11. Create the following matrix with 15 rows
 
@@ -214,14 +214,14 @@ count(x = x, int = 6) # The argument should return a 2 given vector x
 zsquared <- function(x){
   z <- numeric(length(x))
   for(i in 1:length(x)){
-    z[i] <- x[i]^2
+    z[i] <- x[i]^i
   }
   return(z)
 }
 
 # Testing the function
 
-x <- c(2, 2)
+x <- c(2, 2, 3)
 zsquared(x) # should return two 4s given vector x
 ```
 
