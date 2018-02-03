@@ -222,7 +222,7 @@ zsquared <- function(x){
 # Testing the function
 
 x <- c(2, 2, 3)
-zsquared(x) # should return two 4s given vector x
+zsquared(x) # should return a 2, 4, and 27 given vector x
 ```
 
 ###15. Create a piecewise function
