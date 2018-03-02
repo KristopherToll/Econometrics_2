@@ -1,0 +1,119 @@
+---
+title: "Stats_homework_3"
+author: "Kristopher C. Toll"
+date: "February 9, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Problem 65
+
+I used Rmarkdown for this
+
+```{r importing data}
+library(readr)
+cancer <- (read.table("C:/Users/Kristopher/odrive/Box/Mathmatical Stats/cancer.txt"))
+```
+
+# Part a
+
+```{r}
+hist(cancer[,1], breaks = 100, main = "Histogram of the Population", xlab = "Number of deaths by breast cancer")
+```
+
+# Part b. 
+
+```{r}
+Mu = mean(cancer[,1])
+print(c(Mu, "Population mean"))
+
+total = sum(cancer[,1])
+print(c(total, "Population total"))
+
+N = length(cancer[,1])
+PopVar = (1/(N)) * sum((cancer[,1] - Mu)^2)
+print(c(PopVar, "Population Variance"))
+
+PopStd = sqrt(PopVar)
+print(c(PopStd, "Population Standard Deviation"))
+```
+
+# Part C
+
+```{r}
+means <- rep(0,1000)
+for(i in 1:1000){
+  means[i] = mean(sample(cancer[,1], 25, replace=FALSE))
+}
+hist(means, breaks = 100, main = " Histogram of Means with n=25")
+```
+
+# Part d
+
+```{r}
+mysamp = sample(cancer[,1], 25, replace = FALSE)
+N = length(cancer[,1])
+
+
+xbar = mean(mysamp)
+print(c(xbar, "sample Mean"))
+
+EstTotal = N * xbar
+print(c(EstTotal, "Estimated Total"))
+```
+# Part e
+
+```{r}
+n = length(mysamp)
+sampleVar = (1/(n-1)) * sum((mysamp - xbar)^2)
+EstVar_xbar = (sampleVar/n)*(1-n/N) # Done with the population correction
+print(c(EstVar_xbar, "Estimated Variance of xbar"))
+
+EstStd_xbar = sqrt(EstVar_xbar)
+print(c(EstStd_xbar, "Estimated Standard Deviation of xbar"))
+```
+
+# Part f
+```{r}
+C.I <- c(xbar - 1.96 * (sqrt(PopVar/n)), xbar + 1.96 * (sqrt(PopVar/n)))
+print(c(C.I, "Confidence Interval for Mu which is does contain"))
+
+C.I2 <- c(EstTotal - 1.96 * sqrt(N^2 * EstVar_xbar),  EstTotal + 1.96 * sqrt(N^2 * EstVar_xbar))
+print(c(C.I2, "Confidence Interval for the total which is does contain."))
+
+```
+
+# Part g
+
+```{r}
+mysamp2 = sample(cancer[,1], 100, replace = FALSE)
+hist(mysamp2, main = "Histogram with n=100", breaks = 100)
+
+N = length(cancer[,1])
+
+xbar = mean(mysamp2)
+print(c(xbar, "sample Mean"))
+
+EstTotal = N * xbar
+print(c(EstTotal, "Estimated Total"))
+
+n = length(mysamp2)
+sampleVar = (1/(n-1)) * sum((mysamp - xbar)^2)
+EstVar_xbar = (sampleVar/n)*(1-n/N) # Done with the population correction
+print(c(EstVar_xbar, "Estimated Variance of xbar"))
+
+EstStd_xbar = sqrt(EstVar_xbar)
+print(c(EstStd_xbar, "Estimated Standard Deviation of xbar"))
+
+C.I <- c(xbar - 1.96 * (sqrt(PopVar/n)), xbar + 1.96 * (sqrt(PopVar/n)))
+print(c(C.I, "Confidence Interval for Mu which is does contain"))
+
+C.I2 <- c(EstTotal -1.96 * sqrt(N^2 * EstVar_xbar),  EstTotal + 1.96 * sqrt(N^2 * EstVar_xbar))
+print(c(C.I2, "Confidence Interval for the total which it barely barely falls within"))
+```
+
+Compareing the two sampling distributions, it is clear that the random sample of 100 will get closer estimates to what the true populations parameters are. It is alwasy better to go for a bigger sample size when estimating parameters. This is because when you have larger sample size, the margin of error will reduce and the distribtution of xbar will follow a bell shape more closely. 

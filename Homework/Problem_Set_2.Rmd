@@ -1,0 +1,140 @@
+---
+title: "Homework Two for Econometrics"
+author: "Kristopher C. Toll"
+date: "January 31, 2018"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+    ## TO RERUN THIS SCRIPT YOU MAY NEED TO INSTALL THE 'ASTSA' PACKAGE 
+#install.packages("astsa")
+
+library(astsa)
+options(scipen=999)
+```
+
+# Application
+
+## Problem 1
+
+### part a
+
+```{r problem 1}
+# Create the time trend
+
+# pass Johnson and Johnson into it own vector
+
+a <- jj
+
+# Creating the data set
+trend <- time(jj)
+q <- factor(rep(1:4, 21))
+ln.jj <- log(jj)
+
+# Without the intercept
+reg.jj <- lm(ln.jj ~ -1 + trend + q, na.action = NULL)
+summary(reg.jj)
+```
+
+Looking at the results of the output we can see that without an intercept term we are able to determine what the effects of each quarter are. It seems that in each quarter, there will be a decrease of 328 dollars in each quarter. The trend variable means that as each time period moves up by one, we have an average increase of 0.167. However, by removing the intercept term and including each quarter in the model, we have  colinear problem and thus the estimates cannot be taken seriously. The intercept is passed into each quarter.
+
+### Part b
+
+```{r}
+# With the intercept
+reg.jj2 <- lm(ln.jj ~ trend + q, na.action = NULL)
+summary(reg.jj2)
+```
+
+By including the intercept parameter, we can now get a more precise estimate for each quarter. The first quarter is part of the intercept term and now the interpretations of each coefficient estiamte are acurate.  
+
+### c
+
+```{r}
+
+fitted.ts <- as.ts(reg.jj2)
+plot(ln.jj, col="steelblue")
+lines(fitted(reg.jj2), col="firebrick")
+
+plot(reg.jj2$residuals, col="snow4") # I picked snow4 because it is white just like white noise
+```
+
+The model with the intercept fits the model very and well. The adjusted r squared value is .9852 and the ploted residuals do appear to be random which sugjests white noise. 
+
+
+## Problem 2
+
+### Part a
+
+```{r}
+x <- varve
+plot(x)
+```
+
+There do seem to be some trends from year to year. Which sugjests nonstationarity but we can't verify from this plot alone.
+
+### Part b
+
+```{r}
+half <- .5*length(x)
+x.1 <- x[1:half]
+varx.1 <- var(x.1)
+
+x.2 <- x[(half+1):length(x)]
+varx.2 <- var(x.2)
+
+print(c(varx.1, "variance of first half"))
+print(c(varx.2, "variance of second half"))
+```
+
+We can see that there is a difference between the variance of the first half of the series and the second half.
+
+### Part c
+
+```{r}
+y <- log(x)
+y.1 <- y[1:half]
+y.2 <- y[(half+1):length(y)]
+
+print(c(var(y.1), "variance of first half"))
+print(c(var(y.2), "variance of second half"))
+```
+Here we can see that the differenc in variance between the first half and second half are not as exagerated and this series is more stable.
+
+### Part d
+
+```{r}
+hist(x, probability = TRUE, breaks = 20, ylim = c(0, 0.035))
+lines(density(x), col = "firebrick") # I overlaid the kernel on the histogram
+
+plot(y)
+hist(y, probability = TRUE, breaks = 20, ylim = c(0, 0.65))
+lines(density(y), col = "firebrick") # I overlaid the kernel on the histogram
+```
+The log transformation does a lot of improve normaility. It isn't perfect but it is much more usable
+
+### Part e
+
+```{r}
+acf(y, lag.max = 100)
+pacf(y)
+```
+
+By examining the acf we notice that there is a decrease in autocovariance. However, some of the future lags are higher than past lags and it doesn't decrease to zero till the 96 lag. It is difficult to determine what kind of process this is. Pacf doesn't help us either.
+
+```{r}
+t <- 2:length(y)
+u <- (y[t] - y[t-1])
+plot(u, type = "l", col = "royalblue3", main = "Plot of One Period Lagged Log Values")
+acf(u)
+pacf(u)
+
+```
+
+
+
+### Part g
+
+In examining the plots we see that acf cuts off after one lag and partial acf seems to decay expontentialy. This sugjests an MA(1) process. 
