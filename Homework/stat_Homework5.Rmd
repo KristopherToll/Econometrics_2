@@ -1,0 +1,29 @@
+---
+title: "Homework_5_MathStats"
+author: "Kristopher C. Toll"
+date: "March 20, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 5
+
+### Part C
+
+```{r}
+
+loglik <- function(n, x, p){
+  for(i in 1:length(p))
+    y <- log(choose(n, x)) + x*log(p) + (n-x) *log(1-p)
+  return(y)
+}
+
+n = 10
+x = 5
+p = seq(0, 1, length.out = 100)
+l = loglik(n, x, p)
+plot(p,l, main = "Log Likelihood of P")
+```
