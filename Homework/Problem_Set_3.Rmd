@@ -1,0 +1,217 @@
+---
+title: "Problem_Set_3"
+author: "Kristopher C. Toll"
+date: "April 3, 2018"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(forecast)
+library(astsa)
+library(tseries)
+library(TSA)
+library(fGarch)
+```
+
+# Theory
+
+## Problem 1
+
+$$Y_t = e_t = \sigma_tZ_t$$
+where $Z_t$ ~ iid $N(0,1)$
+
+$$\sigma_t^2 = \alpha_0 + \alpha_1Y_{t-1}^2$$
+
+with $\alpha_0 > 0$, $0 < \alpha_1 < 1$ and $Z_t$ and $Y_{t-j}, j \epsilon \mathbb{N}$, independent for all $t \epsilon \mathbb{Z}$
+
+$$Y_t^2 = (\sigma_t Z_t)^2 = \sigma_t^2 Z_t^2 = (\alpha_0 + \alpha_1Y_{t-1}^2)Z_t^2 = \alpha_0Z_t^2+ \alpha_1Z_t^2Y_{t-1}^2$$
+$$Y_{t-1}^2 = \sigma_{t-1}^2Z_{t-1}^2$$ 
+$$\sigma^2_{t-1}=\alpha_0 + \alpha_1Y_{t-2}^2$$
+$$Y_{t-1}^2=(\alpha_0+\alpha_1Y_{t-2}^2)Z_{t-1}^2$$
+so,
+$$Y_t^2=\alpha_0Z_t^2+ \alpha_1Z_t^2(\alpha_0+\alpha_1Y_{t-2}^2)Z_{t-1}^2=\alpha_0Z_t^2+\alpha_0\alpha_1Z_{t-1}^2+\alpha_1^2Y_{t-2}^2Z_t^2Z_{t-1}^2$$
+$$Y_{t-2}^2=(\alpha_0+\alpha_1Y_{t-3}^2)Z_{t-2}^2$$
+so,
+$$Y_t^2=\alpha_0Z_t^2+\alpha_0\alpha_1Z_{t-1}^2+\alpha_1^2(\alpha_0+\alpha_1Y_{t-3}^2)Z_{t-2}^2Z_t^2Z_{t-1}^2=\alpha_0Z_t^2+\alpha_0\alpha_1Z_{t-1}^2+\alpha_0\alpha_1^2Z_t^2Z_{t-1}^2Z_{t-2}^2+\alpha_1^3Y_{t-3}^2Z_t^2Z_{t-1}^2Z_{t-2}^2$$
+$$Y_t^2 = \alpha_0\sum_{i=0}^n(\alpha_1^iZ_t^2Z_{t-1}^2Z_{t-2}^2 \cdot\cdot\cdot Z_{t-i}^2) + \alpha_1^{n+1}Y_{t-n-1}^2 Z_t^2Z_{t-1}^2Z_{t-2}^2 \cdot\cdot\cdot Z_{t-n}^2$$
+
+# Application
+
+## Problem 1
+
+### Part A
+
+
+```{r plotting}
+x <- cmort
+plot(x)
+acf(x, lag.max = 35)
+pacf(x)
+adf.test(x, alternative = "stationary",k = 0)
+adf.test(x, alternative = "stationary")
+```
+By examining the plot of the data we can see a seasonal pattern. In the ACF plot we see that there are significant spikes that are declining at a constant rate toward zero and may even develop a sine wave. From the PACF we can see that there are two significant spikes. This suggests that this data follows an AR(2) process. By running the Dickey-Fuller Test we can see that this is indeed a stationary data set.  
+
+### Part b
+
+```{r regression}
+lag2reg_ols <- ar.ols(x, order = 2, demean = FALSE, intercept = TRUE)
+lag2reg_mle <- arima(x, order = c(2,0,0))
+print(lag2reg_mle)
+print(lag2reg_ols)
+```
+We can see that the OLS estimate for the intercept is much larger than the MLE estimate. Other than that, the coefficient estimates are almost the same. Even the MSE for the MLE and OLS models are very similar in value. 
+
+### c 
+ 
+```{r}
+plot(lag2reg_mle$residuals, main = "Residuals from MLE estimation")
+acf(lag2reg_mle$residuals, main = "ACF from MLE estimation")
+pacf(lag2reg_mle$residuals, main = "PACF from MLE estimation")
+Box.test(lag2reg_mle$residuals, lag = log(508), type = "Ljung")
+
+plot(lag2reg_ols$resid, main = "Residuals from OLS estimation")
+acf(lag2reg_mle$resid, main = "ACF from OLS estimation")
+pacf(lag2reg_mle$resid, main = "PACF from OLS estimation")
+Box.test(lag2reg_mle$resid, lag = log(508), type = "Ljung")
+```
+Whether we are examining the MLE model or the OLS model, we can see that there is no auto correlation in the residuals and that they follow a White noise process. This is confirmed by the box test which shows that there is not auto correlation and we see no significant spikes in any of ACF or PACF plots. The AR(2) process models the data well.
+
+### Part d
+
+```{r}
+
+predict <- forecast(lag2reg_mle, h = 4)
+plot(predict, xlim = c(1978, 1980))
+```
+
+For this plot I limited the x axis from 1978 to 1980. Looking ahead we can see that the foretasted mortality rate falls within an a expected range. It does not seem unusual given the past data. In other words, death is on the forecast horizon for at least four periods.
+
+## Problem 2
+
+### Part a
+
+```{r}
+y <- oil
+plot(y)
+acf(y)
+pacf(y)
+adf.test(y, alternative = "stationary", k = 0)
+adf.test(y, alternative = "stationary")
+```
+Looking at the ACF plot, we see that there are significant lags in the ACF plot which follow a high persistent pattern. This provides some evidence for a random walk model. The results from the augmented dicky fuller test show that the data is stationary but is is barely significant at the 0.05 level. Running a standard dicky fuller test, we find that the data is non-stationary. Differencing may be needed to correct for this. In part b we pick a differenced model as the best fit. 
+
+### Part b
+
+```{r}
+y.est <- window(y, end = c(2010, 10))
+y.prdct <- window(y, start = c(2010, 11))
+auto <- auto.arima(y.est, ic="bic", seasonal =TRUE, stepwise = TRUE)
+summary(auto)
+```
+
+By BIC criteria we will choose an ARIMA(1,1,1) which includes differenceing the data. This works around the random walk process. Interestingly, if we go by AIC, we will have a model that has a seasonal component. 
+
+### Part c
+
+```{r}
+plot(auto$residuals)
+acf(auto$residuals)
+pacf(auto$residuals)
+adf.test(auto$residuals, alternative = "stationary", k = 0)
+adf.test(auto$residuals, alternative = "stationary")
+Box.test(auto$residuals, lag = log(545), type = "Ljung")
+qqnorm(auto$residuals)
+qqline(auto$residuals)
+shapiro.test(auto$residuals)
+```
+We can see from the Augmented Dicky Fuller test that the data is stationary. However, in examining the ACF Plots, we do have a significant spike around the eighth lag or so. It is possible that a seasonal component is missed in the ARIMA(1,1,1) model. Our tests for normality provide evidence that our data is skewed. It may suffer from conditional heteroscedasticity. 
+
+### Part d
+
+```{r}
+predict.2 <- forecast(auto, h = 15)
+plot(predict.2, xlim = c(2008, 2010.4))
+lines(y.prdct, col = "firebrick")
+```
+
+The predicted sample falls within the foretasted confidence interval. This model seems to work reasonable well. 
+
+### Part e
+
+```{r}
+oil.hw <- HoltWinters(y.est)
+plot(oil.hw, col = 1:2)
+legend("topleft", c("data", "fitted"), col = c(1,2), lty = 1, bty = "n")
+plot(oil.hw$fitted)
+print(oil.hw)
+```
+
+The exponential smoothing model does seem to capture seasonal trends that may have been missed in the ARIMA(1,1,1). Looking at the plot it is pleasing to the eye so the fit is good.
+
+```{r}
+oil.predict <- forecast(oil.hw, h = 15)
+plot(oil.predict, xlim =c(2008, 2010.4))
+lines(y.prdct, col="firebrick")
+#ts.plot(y, oil.predict, col = 1:2, xlab = "Time", ylab = "Observed/Predict")
+legend("topleft", c("data", "prediction"), col = c(1,2), lty = 1, bty = "n")
+```
+
+The predicted sample falls within the foretasted range generated by the Holt Winters model. Although we can see that the forecast in showing an increase while the predicted is decreasing. 
+
+### Part f
+
+```{r}
+Box.test(auto$fitted^2, lag = log(545), type = "Ljung")
+
+library(TSA)
+McLeod.Li.test(auto, y.est)
+```
+
+By the box test and the McLeod test on the squared residuals, we find that there is conditional heteroscedasticity. In order to account for dependent volatility in the model we need to run a Garch model. 
+
+### Part g
+
+```{r}
+best.mod1 <- garchFit(~ arma(1,1) + garch(1,1), data = diff(y.est), cond.dist = "norm", trace = FALSE)
+best.mod2 <- garchFit(~ arma(1,1) + garch(1,2), data = diff(y.est), cond.dist = "norm", trace = FALSE)
+best.mod3 <- garchFit(~ arma(1,1) + garch(2,1), data = diff(y.est), cond.dist = "norm", trace = FALSE)
+summary(best.mod1)
+#summary(best.mod2)
+#summary(best.mod3)
+```
+
+By the AIC and BIC values, the best model is a ARIMA-GARCH(1,1,1)(1,1,1).
+
+### Part h
+
+```{r}
+plot(best.mod1@residuals/best.mod1@sigma.t, type = "l")
+acf(best.mod1@residuals/best.mod1@sigma.t)
+pacf(best.mod1@residuals/best.mod1@sigma.t)
+Box.test(best.mod1@residuals/best.mod1@sigma.t, type = "Ljung")
+
+plot((best.mod1@residuals/best.mod1@sigma.t)^2, type = "l")
+acf((best.mod1@residuals/best.mod1@sigma.t)^2)
+pacf((best.mod1@residuals/best.mod1@sigma.t)^2)
+Box.test((best.mod1@residuals/best.mod1@sigma.t)^2, type = "Ljung")
+```
+
+Looking at the ACF and PACF for the standardized residuals, we do see a few significant spikes but they don't fall that far outside the confidence interval. In examining the ACF and PACF for the squared standardized residuals, we see no significant spikes. Auto correlation has been removed from $\sigma_t^2$ in the model and our box test confirms it.
+
+### Part i
+
+```{r}
+mod.forecast <- predict(best.mod1, h=15, plot=TRUE)
+lines(ts(diff(y.prdct), start = 133), col = "violetred4")
+```
+
+The prediction sample does lie within the 95% confidence interval of the foretasted Garch model.  
+
+
+
+
+
+
+
