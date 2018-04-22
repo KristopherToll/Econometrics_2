@@ -1,0 +1,208 @@
+---
+title: "Problem_Set_4"
+author: "Kristopher C. Toll"
+date: "April 18, 2018"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+```
+
+# Theory
+
+## Problem 1
+
+### Part a
+
+Having aggregate time effects will allow the mode to keep track of time changes and shooks correlated with the other regressors. These could include GDP, and other business cycle trends.
+
+### Part b
+
+$v_i$ could include individual characteristics about the county that are left out of the model. These may be policy differences between counties or what kind of workforce is availbe, which would make the cov($\nu_i,x_{it}$) $\neq 0$.
+
+### Part c
+
+I would argue that the sign for $\delta$ is negative. As the tax rate increases, investments should decrease. Manufactures would seek other counties that are cheaper to produce in. 
+
+### Part d
+
+It is possible that the cov($\nu_i,x_{it}$) $\neq 0$. As such, it would be best to run a fixed effects model to account for and individual effects not captured in the model. A two-way random effects may also be useful and a Huasman test would let us know which model produced better results. 
+
+## Problem 2
+
+Let, $\tilde{x}_i = x_{it} - \bar{x}_{it}$ and $\tilde{y}_i = y_{it}-\bar{y}_{it}$
+
+
+$$\hat{\beta}_{FE} =(\tilde{X^\prime}\tilde{X})^{-1}\tilde{X^\prime}\tilde{X} = [\sum_{i=1}^N(\tilde{x}^\prime_{i1}\tilde{x}_{i1}+\tilde{x}^\prime_{i2}\tilde{x}_{i2})]^{-1} [\sum_{i=1}^N(\tilde{x}^\prime_{i1}\tilde{y}_{i1}+\tilde{x}^\prime_{i2}\tilde{y}_{i2})]$$
+$$\tilde{x}_{i1} = x_{i1} - \bar{x}_{i} = x_{i1}- \frac{1}{2}(x_{i1} + x_{i2})=-\frac{1}{2}(x_{i2}-x_{i1})$$
+$$\tilde{x}_{i1} = -\frac{1}{2}(\Delta x_i)$$
+$$\tilde{x}_{i2} = x_{i2} - \bar{x}_{i} = x_{i2}- \frac{1}{2}(x_{i1} + x_{i2})=\frac{1}{2}(x_{i2}-x_{i1})$$
+$$\tilde{x}_{i2} = \frac{1}{2}(\Delta x_i)$$
+$$\tilde{y}_{i1}=-\frac{1}{2}(\Delta y_i) \\\tilde{y}_{i2}=\frac{1}{2}(\Delta y_i)$$
+Thus,
+
+$$\hat\beta_{FE}= [\sum_{i=1}^N(\tilde{x}^\prime_{i1}\tilde{x}_{i1}+\tilde{x}^\prime_{i2}\tilde{x}_{i2})]^{-1}[\sum_{i=1}^N(\tilde{x}^\prime_{i1}\tilde{y}_{i1}+\tilde{x}^\prime_{i2}\tilde{y}_{i2})]$$
+$$\hat\beta_{FE}=[\sum_{i=1}^N((-\frac{1}{2}\Delta x_i)^\prime(-\frac{1}{2}\Delta x_i)+(\frac{1}{2}\Delta x_i)^\prime(\frac{1}{2}\Delta x_i))]^{-1}[\sum_{i=1}^N((-\frac{1}{2}\Delta x_i)^\prime(-\frac{1}{2}\Delta y_i)+(\frac{1}{2}\Delta x_i)^\prime(\frac{1}{2}\Delta y_i))]$$
+$$\hat\beta_{FE}=[\sum_{i=1}^N(\frac{1}{2}\Delta x_i^\prime\Delta x_i)]^{-1}[\sum_{i=1}^N(\frac{1}{2}\Delta x_i^\prime\Delta y_i)]=\frac{1}{2}^{-1}\frac{1}{2}[\sum_{i=1}^N(\Delta x_i^\prime\Delta x_i)]^{-1}[\sum_{i=1}^N(\Delta x_i^\prime\Delta y_i)]$$
+$$\hat\beta_{FE}=[\sum_{i=1}^N(\Delta x_i^\prime\Delta x_i)]^{-1}[\sum_{i=1}^N(\Delta x_i^\prime\Delta y_i)]=\hat\beta_{FD}$$
+
+# Application
+
+## Problem 1
+
+
+### Part a
+
+```{r include=FALSE}
+library(plm)
+library(stargazer)
+library(lmtest)
+norway <- read_csv("C:/Users/Kristopher/odrive/Box/Econometrics/norway.csv")
+```
+
+```{r}
+nor_panel <- pdata.frame(norway, index = c("district", "year")) 
+
+pool_nor <- plm(log(crime) ~ d78 + clrprc1 + clrprc2, data = nor_panel, index = c("district", "year"),model = "pooling" )
+summary(pool_nor)
+```
+
+It is evident that as crimes are solved there will be decrease in the number of crimes commited. For every crime that was solved last year, there is approximatnely a 1.8% decrease in crimes commited and for two years ago, it is a 1.7% decrease.
+
+```{r}
+pbgtest(pool_nor)
+```
+There is serial correlation in this model. This can overstate the signifigance of some of the variables. 
+
+### Part b
+
+```{r warning=FALSE, paged.print=TRUE}
+fixed_nor <- plm(log(crime) ~ d78 + clrprc1 + clrprc2, data = nor_panel, index = c("district", "year"), model = "within" )
+
+stargazer(pool_nor, fixed_nor, title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS", "Fixed Effects"), df = TRUE, digits = 4, type = "text")
+
+#LSDV_nor <- lm(log(crime) ~ d78 + clrprc1 + clrprc2+ factor(district), data = nor_panel )
+#summary(LSDV_nor)
+```
+
+The significance level for the clear-up % variable droped  for the prior year and the two-years prior. The two-years prior is till significant at the 95%. As there are only two time periods in this data set and a time-demeand fixed effected model was run, it does not make sense to test for serial correlation. The dummy variable should be enough to control for any time trens. However, the significance level could still be misrepresented as there may be homoskedasticity between the two periods.
+
+```{r warning=FALSE}
+fixed_robust_nor <- coeftest(fixed_nor, vcov=vcovHC(fixed_nor, method = "arellano", type = "HC3"))
+print(fixed_robust_nor)
+```
+Even with the robust erros, we still have a 95% significance for the two-years prior clear-up %.
+
+### Part c
+
+```{r warning=FALSE}
+RE_nor <- plm(log(crime) ~ d78 + clrprc1 + clrprc2, data = nor_panel, index = c("district", "year"), effect = "individual", model = "random" )
+
+stargazer(pool_nor, fixed_nor, fixed_robust_nor, RE_nor, title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS", "Fixed Effects","Fixed with Robust Errors","Random Effects"), df = TRUE, digits = 4, type = "text")
+```
+
+With the random effects model, both clear-up variables are significance at the 99% level like the pooled regression. There are a lot of 53 different districts in this dataset which could influcence the crime rate. Each district could have it's own demographics that behave differently from eachother. It might make sense to run a Random Effects model as each district could be correlated with the regressors. However, after using a Hausman test to it is evidenct that the $E(\nu_{i}X_{it})\neq 0$ and the fixed model is the prefered one.
+
+```{r}
+phtest(RE_nor, fixed_nor)
+```
+## Problem 2
+
+### Part a
+
+```{r include=FALSE}
+wage <- read_csv("C:/Users/Kristopher/odrive/Box/Econometrics/wage.csv")
+wage_panel <- pdata.frame(wage, index = c("person", "year")) 
+wage_panel$exper_sqr <- (wage_panel$exper)^2
+```
+
+All of the time-invariant regressors are education, black and hispanic. Time-variant variables include experiance, married, and whether or not one joins a union.
+
+### Part b
+
+```{r}
+pool_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, model = "pooling" )
+summary(pool_wage)
+```
+
+$\nu_i$ may be uncorrelated but $\zeta_{it}$ still could be correlated with the other regressers. There are other individual charactiarics that could change over time such as promotions, household size, and other obligations that take individuals ways from work which depend on time.
+
+### Part c
+
+```{r warning=FALSE}
+RE_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "twoway", model = "random" )
+#RE_wage2 <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "time", model = "random" )
+#RE_wage3 <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "individual", model = "random" )
+
+stargazer(pool_wage, RE_wage,  title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS","Random Effects"), df = TRUE, digits = 4, type = "text")
+```
+
+All the vairble in the pooled and randome effects models produce very similar results. The magnitudes for each variable between models are different but all of them have the same level of signifigance across the models.
+
+### Part d
+
+```{r warning=FALSE}
+FE_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel,effect = "twoway", model = "within" )
+
+stargazer(pool_wage, RE_wage, FE_wage, title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS","Random Effects", "Fixed Effects"), df = TRUE, digits = 4, type = "text")
+```
+
+Under the fixed effects model, Marriege and being part of a union are still signifigance contributer to wage but the actually impact that they have is much less. Experiance is a redundant varible because as it is demeaned we are letting that distribution of experiance be symetic at zero for each individual.  
+
+### part e
+
+```{r}
+FE_wage_interactions <- plm(log(wage) ~ educ*d81 + educ*d82 + educ*d83 + educ*d84 + educ*d85 + educ*d86 + educ*d87 + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "twoway", model = "within" )
+summary(FE_wage_interactions)
+```
+
+The return to education is decreaseing over time. This may because those indiviudals entered the workforce late and have not yet caught up to those who have been in the workfoce for longer. There could also be cylicial time effects in the 80s which forced workers to take pay cuts. 
+
+### part f
+
+```{r}
+wage_panel$union_1 <- lead(wage_panel$union)
+FE_wage_ULead <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union + union_1, data = wage_panel, effect = "twoway", model = "within")
+summary(FE_wage_ULead)
+```
+
+The union lead variable is significant at the 90% level. It seems that if an individual is considering entering a union and perhaps displaying to his or her managers, they can experiance an increase in wage by 4%.
+
+## Problem 3
+
+### Part a
+
+The main purpose of this artilce was to determine if education is truly a precursor to democracy. Past lituratue and political thought sugests that having a higher level of education attainment. Past model have also supplied empherical evidence for that realm of thought. However, it is possible that some of those models suffer from omited bias. "From Education to Democracy" explores what happens when variable to control for omited bias are introduced into the model. 
+
+### Part b
+
+The authors of "From Education to Democracy" find that when fixed effects on countires are included in their models, the effect of education does not have a significant effect on how democratic a country is. Past litruate only examined a cross-sectional correlation between education and democracy as opposed to within variation. Their about education and democracy was thus phrased as "...[is] a given country (with its other characteristics held constant) more likely to become more democratic as its population becomes more educated?" When within-country variation is included in the models, there is no clear causal relationship between education and democracy. However, it is possible that there are long-term effects of education on democracy as the authors only looked at short term effects.
+
+### Part c
+
+Country data was obtained a five-year intervals for 108 contries from 1960 to 2000. This was done to do avoid serrial correlation that would have come from averaging across the five-year interval. Average years of schooling where obtain from the total population of 25 and older. The average years of schooling ranges from 0.04 to 12.18. To measure democracy, The Freedom House Political Rights Index was used to. This index ranges from 1 being least democtraic to 7 being the most. The authors tranfromed this varibel so that is lies on a 0 to 1 scale. 
+
+### Part d
+
+Equation one is  $d_{it}=\alpha d_{i,t-1} + \gamma s_{i,t-1} + \mu_t + \nu_{it}$ where $d_{it}$ represencts the deomcracy score, $s_{it}$ the average years of education, $\mu_t$ is the full set of time effects for common shocks and trends and $\nu_{it}$ is the error term for all other omited factors. The education variable and the democracy variable are both lagged. This pooled model does not include any individual country effects and it would assume that the cov($\nu_{it}, X_{it}$) $\neq 0$. However, the authors belive that this a false assumption to make and leads to a spurilous correlation in $\gamma$
+
+### Part e
+
+Equation two is $d_{it}=\alpha d_{i,t-1} + \gamma s_{i,t-1} + \mu_t + \delta_i + \nu_{it}$ where the only difference $\delta_i$ which is a set of dummy varibles. This was included becuase is it belived that without it, cov($\nu_{it}, X_{it}$) $\neq 0$ and thus within country variation needs to be controlled for. 
+
+### Part f
+
+It is belived that democratic persitnce in the past will influcence the current contires democtratic score. This is the reson why $d_{i,t-1}$ is inlcuded,
+
+### Part g
+
+| Model  | Limitations |Strenths|
+| ------------- | ------------- |-------------|
+| Content Cell  | Content Cell  ||
+| Content Cell  | Content Cell  ||
+
