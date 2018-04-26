@@ -19,11 +19,11 @@ library(readr)
 
 ### Part a
 
-Having aggregate time effects will allow the mode to keep track of time changes and shooks correlated with the other regressors. These could include GDP, and other business cycle trends.
+Having aggregate time effects will allow the model to keep track of time changes and shocks correlated with the other regressors. These could include GDP, and other business cycle trends.
 
 ### Part b
 
-$v_i$ could include individual characteristics about the county that are left out of the model. These may be policy differences between counties or what kind of workforce is availbe, which would make the cov($\nu_i,x_{it}$) $\neq 0$.
+$v_i$ could include individual characteristics about the county that are left out of the model. These may be policy differences between counties or what kind of workforce is available, which would make the cov($\nu_i,x_{it}$) $\neq 0$.
 
 ### Part c
 
@@ -31,7 +31,7 @@ I would argue that the sign for $\delta$ is negative. As the tax rate increases,
 
 ### Part d
 
-It is possible that the cov($\nu_i,x_{it}$) $\neq 0$. As such, it would be best to run a fixed effects model to account for and individual effects not captured in the model. A two-way random effects may also be useful and a Huasman test would let us know which model produced better results. 
+It is possible that the cov($\nu_i,x_{it}$) $\neq 0$. As such, it would be best to run a fixed effects model to account for individual effects not captured in the model. A two-way random effects may also be useful and a Huasman test would let us know which model produced better results. 
 
 ## Problem 2
 
@@ -72,12 +72,12 @@ pool_nor <- plm(log(crime) ~ d78 + clrprc1 + clrprc2, data = nor_panel, index = 
 summary(pool_nor)
 ```
 
-It is evident that as crimes are solved there will be decrease in the number of crimes commited. For every crime that was solved last year, there is approximatnely a 1.8% decrease in crimes commited and for two years ago, it is a 1.7% decrease.
+It is evident that as crimes are solved there will be decrease in the number of crimes committed. For every crime that was solved last year, there is approximately a 1.8% decrease in crimes committed and for two years ago, it is a 1.7% decrease.
 
 ```{r}
 pbgtest(pool_nor)
 ```
-There is serial correlation in this model. This can overstate the signifigance of some of the variables. 
+There is serial correlation in this model. This can overstate the significance of some of the variables and lead to miscalculated stand errors. 
 
 ### Part b
 
@@ -90,13 +90,13 @@ stargazer(pool_nor, fixed_nor, title = "Panel Regressions", dep.var.labels = "Lo
 #summary(LSDV_nor)
 ```
 
-The significance level for the clear-up % variable droped  for the prior year and the two-years prior. The two-years prior is till significant at the 95%. As there are only two time periods in this data set and a time-demeand fixed effected model was run, it does not make sense to test for serial correlation. The dummy variable should be enough to control for any time trens. However, the significance level could still be misrepresented as there may be homoskedasticity between the two periods.
+The significance level for the clear-up % variable dropped  for the prior year and the two-years prior. The two-years prior is till significant at the 95%. As there are only two time periods in this data set and a time-demeaned fixed effected model was run, it does not make sense to test for serial correlation. The dummy variable should be enough to control for any time trends. However, the significance level could still be misrepresented as there may be heteroskedasticity between the two periods.
 
 ```{r warning=FALSE}
 fixed_robust_nor <- coeftest(fixed_nor, vcov=vcovHC(fixed_nor, method = "arellano", type = "HC3"))
 print(fixed_robust_nor)
 ```
-Even with the robust erros, we still have a 95% significance for the two-years prior clear-up %.
+Even with the robust errors, we still have a 95% significance for the two-years prior clear-up %.
 
 ### Part c
 
@@ -106,7 +106,7 @@ RE_nor <- plm(log(crime) ~ d78 + clrprc1 + clrprc2, data = nor_panel, index = c(
 stargazer(pool_nor, fixed_nor, fixed_robust_nor, RE_nor, title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS", "Fixed Effects","Fixed with Robust Errors","Random Effects"), df = TRUE, digits = 4, type = "text")
 ```
 
-With the random effects model, both clear-up variables are significance at the 99% level like the pooled regression. There are a lot of 53 different districts in this dataset which could influcence the crime rate. Each district could have it's own demographics that behave differently from eachother. It might make sense to run a Random Effects model as each district could be correlated with the regressors. However, after using a Hausman test to it is evidenct that the $E(\nu_{i}X_{it})\neq 0$ and the fixed model is the prefered one.
+With the random effects model, both clear-up variables are significance at the 99% level like the pooled regression. There are a lot of 53 different districts in this data set which could influence the crime rate. Each district could have it's own demographics that behave differently from each other. It might make sense to run a Random Effects model as each district could be correlated with the regressors. However, after using a Hausman test to it is evident that the $E(\nu_{i}X_{it})\neq 0$ and the fixed model is the preferred one.
 
 ```{r}
 phtest(RE_nor, fixed_nor)
@@ -121,7 +121,7 @@ wage_panel <- pdata.frame(wage, index = c("person", "year"))
 wage_panel$exper_sqr <- (wage_panel$exper)^2
 ```
 
-All of the time-invariant regressors are education, black and hispanic. Time-variant variables include experiance, married, and whether or not one joins a union.
+All of the time-invariant regressors are education, black and Hispanic. Time-variant variables include experience, married, and whether or not one joins a union.
 
 ### Part b
 
@@ -130,7 +130,7 @@ pool_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married +
 summary(pool_wage)
 ```
 
-$\nu_i$ may be uncorrelated but $\zeta_{it}$ still could be correlated with the other regressers. There are other individual charactiarics that could change over time such as promotions, household size, and other obligations that take individuals ways from work which depend on time.
+$\nu_i$ may be uncorrelated but $\zeta_{it}$ still could be correlated with the other regressors. There are other individual characteristics that could change over time such as promotions, household size, and other obligations that take individuals ways from work which depend on time. Serial correlation may also be present.
 
 ### Part c
 
@@ -138,21 +138,20 @@ $\nu_i$ may be uncorrelated but $\zeta_{it}$ still could be correlated with the 
 RE_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "twoway", model = "random" )
 #RE_wage2 <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "time", model = "random" )
 #RE_wage3 <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "individual", model = "random" )
-
+#summary(RE_wage)
 stargazer(pool_wage, RE_wage,  title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS","Random Effects"), df = TRUE, digits = 4, type = "text")
 ```
 
-All the vairble in the pooled and randome effects models produce very similar results. The magnitudes for each variable between models are different but all of them have the same level of signifigance across the models.
+All the variable in the pooled and random effects models produce very similar results. The magnitudes for each variable between models are different but all of them have the same level of significance across the models. The signs are also the same for each variable.
 
 ### Part d
 
 ```{r warning=FALSE}
-FE_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel,effect = "twoway", model = "within" )
-
+FE_wage <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + married + union, data = wage_panel, effect = "twoway", model = "within" )
 stargazer(pool_wage, RE_wage, FE_wage, title = "Panel Regressions", dep.var.labels = "Log(crime)", column.labels = c("Pooled OLS","Random Effects", "Fixed Effects"), df = TRUE, digits = 4, type = "text")
 ```
 
-Under the fixed effects model, Marriege and being part of a union are still signifigance contributer to wage but the actually impact that they have is much less. Experiance is a redundant varible because as it is demeaned we are letting that distribution of experiance be symetic at zero for each individual.  
+Under the fixed effects model, Marriage and being part of a union are still significant contributors to wage but the actually impact that they have is much less. Experience is a redundant variable because as it is demeaned we are letting that distribution of experience be symmetric at zero for each individual. As such, it is not possible determine the average effect that experience and education will have in the in the regression. Those variable are uniformly distributed with zero as the mean. The average effect will be zero.  
 
 ### part e
 
@@ -161,7 +160,7 @@ FE_wage_interactions <- plm(log(wage) ~ educ*d81 + educ*d82 + educ*d83 + educ*d8
 summary(FE_wage_interactions)
 ```
 
-The return to education is decreaseing over time. This may because those indiviudals entered the workforce late and have not yet caught up to those who have been in the workfoce for longer. There could also be cylicial time effects in the 80s which forced workers to take pay cuts. 
+Education will be constant for each individual once they are out of school. For every year that they are out of school, the value of their education will decrease and effect it will have on wage will decrease. You could say that the value that education will have on your wage in the future will need to be discounted from the year an individual graduates. 
 
 ### part f
 
@@ -171,38 +170,100 @@ FE_wage_ULead <- plm(log(wage) ~ educ + black + hisp + exper + exper_sqr + marri
 summary(FE_wage_ULead)
 ```
 
-The union lead variable is significant at the 90% level. It seems that if an individual is considering entering a union and perhaps displaying to his or her managers, they can experiance an increase in wage by 4%.
+The union lead variable is significant at the 90% level. It seems that if an individual is considering entering a union and perhaps displaying this interest to his or her managers, they may experience an increase in wage by 4%.
 
 ## Problem 3
 
 ### Part a
 
-The main purpose of this artilce was to determine if education is truly a precursor to democracy. Past lituratue and political thought sugests that having a higher level of education attainment. Past model have also supplied empherical evidence for that realm of thought. However, it is possible that some of those models suffer from omited bias. "From Education to Democracy" explores what happens when variable to control for omited bias are introduced into the model. 
+The main purpose of this article was to determine if education is truly a precursor to democracy. Past literature and political thought suggests that having a higher level of education attainment will lead to more democratic governments. Past models have also supplied empirical evidence for that realm of thought. However, it is possible that some of those models suffer from omitted bias. The article, "From Education to Democracy" explores what happens when variables to control for omitted bias are introduced into the model. This is done to see if education still increases democracy.
 
 ### Part b
 
-The authors of "From Education to Democracy" find that when fixed effects on countires are included in their models, the effect of education does not have a significant effect on how democratic a country is. Past litruate only examined a cross-sectional correlation between education and democracy as opposed to within variation. Their about education and democracy was thus phrased as "...[is] a given country (with its other characteristics held constant) more likely to become more democratic as its population becomes more educated?" When within-country variation is included in the models, there is no clear causal relationship between education and democracy. However, it is possible that there are long-term effects of education on democracy as the authors only looked at short term effects.
+The authors of "From Education to Democracy" find that when fixed effects on countries are included in their models, the effect of education does not have a significant effect on how democratic a country is. Past literature only examined a cross-sectional correlation between education and democracy as opposed to within variation. Their question about education and democracy was thus phrased as "...[is] a given country (with its other characteristics held constant) more likely to become more democratic as its population becomes more educated?" When within-country variation is included in the models, there is no clear causal relationship between education and democracy. However, it is possible that there are long-term effects of education on democracy as the authors only looked at short term effects.
 
 ### Part c
 
-Country data was obtained a five-year intervals for 108 contries from 1960 to 2000. This was done to do avoid serrial correlation that would have come from averaging across the five-year interval. Average years of schooling where obtain from the total population of 25 and older. The average years of schooling ranges from 0.04 to 12.18. To measure democracy, The Freedom House Political Rights Index was used to. This index ranges from 1 being least democtraic to 7 being the most. The authors tranfromed this varibel so that is lies on a 0 to 1 scale. 
+Country data was obtained at five-year intervals for 108 countries from 1960 to 2000. This was done to do avoid serial correlation that would have come from averaging across the five-year intervals. Average years of schooling where obtain from the total population of 25 and older. The average years of schooling ranges from 0.04 to 12.18. To measure democracy, The Freedom House Political Rights Index was used to. This index ranges from 1 being least democratic to 7 being the most. The authors transformed this variable so that is lies on a 0 to 1 scale. 
 
 ### Part d
 
-Equation one is  $d_{it}=\alpha d_{i,t-1} + \gamma s_{i,t-1} + \mu_t + \nu_{it}$ where $d_{it}$ represencts the deomcracy score, $s_{it}$ the average years of education, $\mu_t$ is the full set of time effects for common shocks and trends and $\nu_{it}$ is the error term for all other omited factors. The education variable and the democracy variable are both lagged. This pooled model does not include any individual country effects and it would assume that the cov($\nu_{it}, X_{it}$) $\neq 0$. However, the authors belive that this a false assumption to make and leads to a spurilous correlation in $\gamma$
+Equation one is  $d_{it}=\alpha d_{i,t-1} + \gamma s_{i,t-1} + \mu_t + \nu_{it}$ where $d_{it}$ represents the democracy score, $s_{it}$ the average years of education, $\mu_t$ is the full set of time effects for common shocks and trends and $\nu_{it}$ is the error term for all other omitted factors. The education variable and the democracy variable are both lagged. This pooled model does not include any individual country effects and it would assume that the cov($\nu_{it}, X_{it}$) $\neq 0$. However, the authors believe that this a false assumption to make and leads to a misleading correlation in $\gamma$
 
 ### Part e
 
-Equation two is $d_{it}=\alpha d_{i,t-1} + \gamma s_{i,t-1} + \mu_t + \delta_i + \nu_{it}$ where the only difference $\delta_i$ which is a set of dummy varibles. This was included becuase is it belived that without it, cov($\nu_{it}, X_{it}$) $\neq 0$ and thus within country variation needs to be controlled for. 
+Equation two is $d_{it}=\alpha d_{i,t-1} + \gamma s_{i,t-1} + \mu_t + \delta_i + \nu_{it}$ where the only difference $\delta_i$ which is a set of dummy variables. This was included because is it believed that without it, cov($\nu_{it}, X_{it}$) $\neq 0$ and thus within country variation needs to be controlled for. This is why a fixed effect model is used.
 
 ### Part f
 
-It is belived that democratic persitnce in the past will influcence the current contires democtratic score. This is the reson why $d_{i,t-1}$ is inlcuded,
+It is believed that democratic persistence in the past will influence the current country's democratic score. This is the reason why $d_{i,t-1}$ is included. It makes sense that if a country was democratic in the past period it should persistence in the next period. Also, this will help determine if a country will return to some level of democracy.
 
 ### Part g
 
-| Model  | Limitations |Strenths|
+| Model  | Limitations |Strengths|
 | ------------- | ------------- |-------------|
-| Content Cell  | Content Cell  ||
-| Content Cell  | Content Cell  ||
+| Pooled OlS (i)  | This does not control for country effects, there are variables in $\nu_i$ correlated with $X_{it}$  |This is an easy model to compute|
+| Fixed-effects OLS (ii)  | Loss of Degrees of Freedom, we have a parameter for each country and time period. The regressor $d_{i,t-1}$ is also mechanically correlated with  the error term | Controls for country variation |
+|Arellano-Bond GMM (iii)|It is possible to over identify regressors. The model already has a lagged variable and adding an IV may cause endogenaity| The hansen test show that there is not an over identifying issue and the mechanical correlation is removed|
+|Fixed-effects OLS (iv)|This model will again have mechanical correlation between$d_{i,t-1}$ and $\nu_i$| including log of population should addresses omitted time varying variable bias|
+|Arellano-Bond GMM (v)|Could cause endogenatiy in the model| endogeneity was not found in the model and the mechanical correlation is corrected for.|
+|Fixed-effects OLS (vi)| possible mechanical correlation|including Log GDP will also address omitted time varying variable bias|
+|Arellano-Bond GMM (vii)|Possible endogenatiy| There is no endogenatiy and mechanically correlation is removed|
+|Fixed-effects OLS (vii)|Possible mechanical correlation|including both log GDP and Log population will remove omitted variable bias|
+|Arellano-Bond GMM (ix)|Endogenatiy may be present| there is no endogenaity and any correlation is removed between $d_{i,t-}$ and $\nu_i$|
 
+Overall, the authors find that the fixed effects models are preferred because they control for in country variations that are left out of the pooled model. The pooled model suffers from omitted variable bias, as such it is not reliable. The Arellano-Bond models do even more to control for heteroskedasticity standard errors.
+
+### Part h
+
+#### i
+
+Including log($GDP_{i,t-1}$) will show how wealth can effect democracy. More wealth, which varies with time, could imply more access to education and thus a higher democracy score.
+
+#### ii
+
+Common Shocks and trends to a country's democracy score would be left out. These could be anything from changes in policies, governments, and political regimes.
+
+#### iii
+
+I believe that the time indicators should be included. Seeing that they are jointly significant it certainly would not be wise to omit them, as a misleading conclusion could be made between education and democracy.
+
+## Problem 4
+
+### Part a
+
+The purpose of this article is to determine the the advantages on wages for those living in bigger cities. Bigger cities will have a higher cost of living and thus firms tend to pay higher wages to workers for it. However, if this solely is the case, then firms would relocate to areas where they do not have to pay high wages. There must be a benefit to producing in a city despite having to pay higher wages to workers. This paper looks at wages and how workers gain valuable experience to working in a city that benefits firm productivity. This article looks at wages because it will be informative about the productivity advantages of locating in a bigger city.
+
+### part b
+
+One of the possible explanations why workers in big cities obtain higher wages is because they have a higher innate ability and the they also need compensation for higher living expenses. The Authors instead find that workers in bigger cities have an immediate static premium and then gain more valuable experience that they can take with them when they leave the city. Also, workers with a higher productivity level may choose to live in a bigger city which will also contribute to a larger dispersion in wages. Workers in large and small cities do not necessarily have different level of abilities but with static gains and learning advantages of living in a bigger city, they will gain higher wages. 
+
+### part c
+
+The data used in this paper comes form Spain's Continuous Sample of Employment Histories. This data set contains longitudinal information with social security, income tax, and census records for a 4% non-stratified random sample of workers associated with Spain's Social Security. The authors create a panel with monthly observations of the working life of individuals in the sample. They can control for the the individual's labor market status, the occupation, the type of contract, working hours, establishments sector of activity, and the location. Locations are separated into different urban areas in Spain.With they data they can measure tenure and experience calculated as the number of days the worker has been employed. The data set also contains basic individual characteristics such as gender, age and education. It is also know which individuals have pension and unemployment benefits. The samples is restricted to men aged 18 and over with Spanish citizenship born in Spain since 1962. One of the models will include females but the participation rate for that group has been very volatile. This data set makes is possible to follow workers through time and as they move from city to city.
+
+### part d
+
+$$w_{ict}=\sigma_c + \mu_i + \sum_{j=1}^C \delta_{jc}e_{ijt} + x'_{it}\beta + \varepsilon_{ict}$$
+
+The loge wage of worker i in city c at time t is the dependent variable. $\sigma_{c}$ is the city fixed effect, $\mu_i$ is the worker fixed effect. $e_{ijt}$ is the experience acquired by worker i in city j up until time t. $x_{it}$ are time varying individual and job characteristics. $\delta_{jc}$ are scalars, vector $\beta$ are parameters and $\varepsilon_{ict}$ is an error term. This equation will allow for static earnings premium that come form working in a bigger city. It will control for accumulated experience that comes from working in city j. Having city control effects will control for difference in cities such as size. This model is based on the assumptions that city where the worker acquired experience, will be taken with them and impact their wage where they work now. It also allows for cities with different sizes to provide different kinds of experience and for each worker to have a different level of innate ability to start with. At is point there should be little left in the error term that would cause omitted time, individual and location varying variable bias. 
+
+### part e
+
+$$w_{ict} = \sigma_{c} + x_{it}'\beta + \eta_{ict}$$
+
+This model will ignore worker heterogeneity and the benefits of working in different sized cities. This will equation will only need a pooled panel of worker and assumes that there are no individual and dynamic city effects that would be correlated with the regressors. It assumes that city fixed effects are are enough. This model will work if there are not dynamic city gains and all workers are the same.
+
+### part f
+
+$$w_{ict}= \sigma_c + \mu_i + X_{it}' + \zeta_{ict}$$
+
+Again, we are still missing the dynamic city size premium and we do not have individual work effect in the model yet. If we apply demeaning we can account for the worker fixed effects. Different works will have different abilities. 
+
+$$(w_{ict}-\bar w_{i}) = \sum_{j=1}^C \sigma_c (l_{ict} - \bar l_{ic}) + (x_{it}' - \bar x_{i})\beta + (\zeta_{ict} - \bar \zeta_i)$$
+
+This model is based on the assumption that dynamic city size does not influence wage premiums cov$(x_{it}, \sum_{j=1}^C \sigma_{jc} e_{ijt})=0$. However, $\sigma_c$ will still be unbiased if dynamic fixed effects are correlated with the other regressors. Worker fixed effects will account for unobserved work heterogeneity but without the dynamic city variable, there will still be bias in this model.
+
+### part g
+
+Section four makes the argument that there are dynamic benefits of bigger cities and the model in section three should be used. Different cities and varying size will impact wages differently and the data set make it possible to keep track of workers who live and move between different urban areas. Here the authors argue that there are no other unobserved individual, city and time-varying effects that could be pulled out of the error term which would bias the results. Dynamic city gains are needed to predict.
